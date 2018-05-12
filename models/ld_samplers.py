@@ -89,8 +89,8 @@ class pSGLDSampler(LDSampler):
 
     def __repr__(self):
         s = super().__repr__()
-        s += f'Preconditioned alpha: {self.preconditioned_alpha}\n'
-        s += f'Preconditioned lambda: {self.preconditioned_lambda}\n'
+        #s += f'Preconditioned alpha: {self.preconditioned_alpha}\n'
+        #s += f'Preconditioned lambda: {self.preconditioned_lambda}\n'
         return s
 
     def _create_feeds(self):

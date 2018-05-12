@@ -46,7 +46,7 @@ class BBBSampler(Sampler):
         if return_stats:
             stats = SampleStats(time=self._running_time())
 
-        return [sample], [stats]
+        return [sample], [stats], None
 
     @classmethod
     def model_from_description(cls, layers, noise_std, weights_std, batch_size, train_size):

@@ -63,4 +63,4 @@ class PBPSampler(Sampler):
         if sample is not None and return_stats:
             stats = SampleStats(time=self._running_time())
 
-        return [sample], [stats]
+        return [sample], [stats], None

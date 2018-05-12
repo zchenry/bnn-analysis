@@ -71,12 +71,12 @@ class Sampler:
         self._pc = None  # performance counter
 
     def __repr__(self):
-        s = f'Sampler: {self.sampler_type}\n'
-        s += f'Train size: {self.train_size}\n'
-        s += f'Test size: {self.test_size}\n'
-        s += f'Normalise: {self.normalise_data}\n'
-        s += f'X: mean={self.train_x_mean}, std={self.train_x_std}\n'
-        s += f'Y: mean={self.train_y_mean}, std={self.train_y_std}\n'
+        s = 'Sampler: {}\n'.format(self.sampler_type)
+        s += 'Train size: {}\n'.format(self.train_size)
+        s += 'Test size: {}\n'.format(self.test_size)
+        s += 'Normalise: {}\n'.format(self.normalise_data)
+        s += 'X: mean={}, std={}\n'.format(self.train_x_mean, self.train_x_std)
+        s += 'Y: mean={}, std={}\n'.format(self.train_y_mean, self.train_y_std)
         return s
 
     def _normalise_data(self):
@@ -175,13 +175,12 @@ class Sampler:
         :param return_stats: Whether to return sampling process statistics
         :return: the generated sample and accompanying statistics
         """
-
         test_x = test_x if test_x is not None else self.test_x
 
         # make a number of tries to draw a sample
         for i in range(self.draw_retries_num):
-            sample, stats = self._sample_predictive(session=session, test_x=test_x, return_stats=return_stats,
-                                                    is_discarded=is_discarded, **kwargs)
+            sample, stats, params = self._sample_predictive(session=session, test_x=test_x, return_stats=return_stats,
+                                                            is_discarded=is_discarded, **kwargs)
             if sample is not None:
                 break
 
@@ -194,9 +193,9 @@ class Sampler:
             logging.warning('Impossible to draw a sample with the specified parameters.')
 
         if return_stats:
-            return sample, stats
+            return sample, stats, params
 
-        return sample
+        return sample, params
 
     @classmethod
     def get_model_parameters_size(cls, layers_description):

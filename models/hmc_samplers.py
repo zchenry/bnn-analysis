@@ -39,9 +39,9 @@ class HMCSampler(MCMC_sampler):
 
     def __repr__(self):
         s = super().__repr__()
-        s += f'HMC steps: {self.hmc_steps}\n'
-        s += f'MH correction: {self.mh_correction}\n'
-        s += f'Persistent momentum: {self.persistent_momentum}\n'
+        s += 'HMC steps: {}\n'.format(self.hmc_steps)
+        s += 'MH correction: {}\n'.format(self.mh_correction)
+        s += 'Persistent momentum: {}\n'.format(self.persistent_momentum)
         return s
 
     def _create_feeds(self):
@@ -170,7 +170,7 @@ class SGHMCSampler(HMCSampler):
 
     def __repr__(self):
         s = super().__repr__()
-        s += f'Friction: {self.friction}\n'
+        s += 'Friction: {}\n'.format(self.friction)
         return s
 
     def _leapfrog_step(self, position, velocity, velocity_step_multiplier=1.):

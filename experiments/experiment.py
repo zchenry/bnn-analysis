@@ -55,7 +55,6 @@ class Experiment:
 
             sampler.construct()
             sampler.fit()
-
             return sampler
 
         env.sampler_factory = sampler_factory
@@ -67,7 +66,7 @@ class Experiment:
 
             wreg = length_scale ** 2 * (1 - dropout) / (2. * env.get_train_x().shape[0] * tau)
             model = DropoutSampler.model_from_description(env.layers_description, wreg, dropout)
-            logging.info(f'Reg: {wreg}')
+            logging.info('Reg: {}'.format(wreg))
 
             if sampler_params is not None:
                 params.update(sampler_params)
@@ -117,7 +116,8 @@ class Experiment:
             with tf.device('/cpu:0'):
                 self._run_queue(queue, skip_completed=skip_completed)
         else:
-            self._run_queue(queue, skip_completed=skip_completed)
+            with tf.device('/device:GPU:0'):
+                self._run_queue(queue, skip_completed=skip_completed)
 
     def is_complete(self, name):
         return utils.get_latest_data_subdir(self.__to_pattern(name)) is not None
@@ -204,7 +204,7 @@ class Experiment:
     def __report_metrics(self, target, scores):
         str = target
         for name, score in scores.items():
-            str += f' & {score:.2f}'
+            str += ' & {:.2f}'.format(score)
 
         str += ' \\\\'
         return str
@@ -216,7 +216,7 @@ class Experiment:
 
         str = target
         for m, s in zip(mean, std):
-            str += f' & {m:.2f} $\\pm$ {s:.3f}'
+            str += ' & {:.2f} $\\pm$ {:.3f}'.format(m, s)
 
         str += ' \\\\'
         return str

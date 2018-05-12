@@ -71,16 +71,16 @@ class MCMC_sampler(Sampler):
 
     def __repr__(self):
         s = super().__repr__()
-        s += f'Chains num: {self.chains_num}\n'
-        s += f'Batch size: {self.batch_size}\n'
-        s += f'Position size: {self.position_size}\n'
-        s += f'Precisions: noise = {self.noise_precision}, weights = {self.weights_precision}\n'
-        s += f'Resample precision: noise = {self.resample_noise_precision}, '
-        s += f'weights = {self.resample_weights_precision}\n'
-        s += f'Burn in: {self.burn_in}\n'
-        s += f'Seek step sizes: {self.seek_step_sizes}\n'
-        s += f'Anneal step sizes: {self.anneal_step_sizes}\n'
-        s += f'Fade in velocities: {self.fade_in_velocities}\n'
+        s += 'Chains num: {}\n'.format(self.chains_num)
+        s += 'Batch size: {}\n'.format(self.batch_size)
+        s += 'Position size: {}\n'.format(self.position_size)
+        s += 'Precisions: noise = {}, weights = {}\n'.format(self.noise_precision, self.weights_precision)
+        s += 'Resample precision: noise = {}, '.format(self.resample_noise_precision)
+        s += 'weights = {}\n'.format(self.resample_weights_precision)
+        s += 'Burn in: {}\n'.format(self.burn_in)
+        s += 'Seek step sizes: {}\n'.format(self.seek_step_sizes)
+        s += 'Anneal step sizes: {}\n'.format(self.anneal_step_sizes)
+        s += 'Fade in velocities: {}\n'.format(self.fade_in_velocities)
         s += 'Step sizes: {}\n'.format(np.array_str(self.step_sizes).replace('\n', ''))
         s += 'Step probabilities: {}\n'.format(np.array_str(self.step_probabilities).replace('\n', ''))
         return s
@@ -223,7 +223,7 @@ class MCMC_sampler(Sampler):
         weight_deviation = self._updated_position_value.max() - self._updated_position_value.min()
 
         if not (weight_deviation < 10 ** 9):
-            logging.info(f'Sample discarded to prevent instability: {weight_deviation:.2f}')
+            logging.info('Sample discarded to prevent instability: {:.2f}'.format(weight_deviation))
             return None
 
         # accept new position
@@ -242,7 +242,7 @@ class MCMC_sampler(Sampler):
 
         if not self._has_burned_in and self._burned_in():
             self._has_burned_in = True
-            logging.info(f'Burned in. Samples = {self.sample_number}, step size = {self._current_step_size_value}.')
+            logging.info('Burned in. Samples = {}, step size = {}.'.format(self.sample_number, self._current_step_size_value))
 
         return self._position_value
 
@@ -350,7 +350,7 @@ class MCMC_sampler(Sampler):
 
     def _transpose_mul(self, a, b):
         """ Shortcut for multiplication with a transposed matrix. """
-        return tf.transpose(tf.mul(tf.transpose(a), b))
+        return tf.transpose(tf.multiply(tf.transpose(a), b))
 
     def _sample_posterior(self, session=None, return_stats=False, **kwargs):
         """ Returns a new sample obtained via simulation. """
@@ -372,15 +372,16 @@ class MCMC_sampler(Sampler):
                 break
 
         if posterior_sample is None:
-            return None, None
+            return None, None, None
 
         if is_discarded:
-            return self.test_x, None
+            return self.test_x, None, None
 
         model, parameters = self.test_model
 
         collected_samples = list()
         collected_stats = list()
+        collected_params = list()
 
         for i in range(posterior_sample.shape[0]):
             model_params = np.reshape(posterior_sample[i], (1, posterior_sample[i].shape[0]))
@@ -392,8 +393,9 @@ class MCMC_sampler(Sampler):
 
             collected_samples.append(sample)
             collected_stats.append(stats)
+            collected_params.append(model_params)
 
-        return collected_samples, collected_stats
+        return collected_samples, collected_stats, collected_params
 
     def _collect_stats(self, chain):
         stats = SampleStats(time=self._running_time(),
@@ -464,13 +466,14 @@ class MCMC_sampler(Sampler):
     @classmethod
     def model_chain_from_position(cls, chains_num, layer_descriptions, position_tensor, input_tensor):
         """ Creates multiple-chain model from the specified position and description. """
-        positions = tf.split(0, chains_num, position_tensor)
+        # positions = tf.split(0, chains_num, position_tensor)
+        positions = tf.split(position_tensor, chains_num)
 
         m = []
         for i in range(chains_num):
             m.append(cls.model_from_position(layer_descriptions, positions[i], input_tensor))
 
-        models = tf.pack(m)
+        models = tf.stack(m)
 
         return models
 

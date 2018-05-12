@@ -28,8 +28,8 @@ def get_latest_data_subdir(pattern=None, take=-1):
 
     if pattern is not None:
         dirs = (d for d in dirs if pattern in d)
-
     dirs = list(sorted(dirs, key=get_date))
+
     if len(dirs) == 0:
         return None
 
@@ -46,7 +46,7 @@ def save_pickle(filename, save):
         pickle.dump(save, f, pickle.HIGHEST_PROTOCOL)
         f.close()
     except Exception as e:
-        logging.error(f'Unable to save data to {filename}: {e}')
+        logging.error('Unable to save data to {}: {}'.format(filename, e))
         raise
 
 

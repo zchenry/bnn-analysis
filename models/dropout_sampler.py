@@ -32,7 +32,7 @@ class DropoutSampler(Sampler):
 
     def __repr__(self):
         s = super().__repr__()
-        s += f'Batch size: {self.batch_size}\n'
+        s += 'Batch size: {}\n'.format(self.batch_size)
         return s
 
     def _fit(self, n_epochs=None, verbose=0, **kwargs):
@@ -53,7 +53,7 @@ class DropoutSampler(Sampler):
         if return_stats:
             stats = SampleStats(time=self._running_time())
 
-        return sample, [stats]
+        return sample, [stats], None
 
     @classmethod
     def model_from_description(cls, layers_description, w_reg, dropout=None, add_softmax=False):

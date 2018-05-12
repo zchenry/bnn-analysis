@@ -82,11 +82,11 @@ class Env:
         input_data = input_data[:batches * (self.batch_size * self.n_splits)]
 
         self.data_size = input_data.shape[0]
-        print(f'Loaded input data, shape = {input_data.shape}')
+        print('Loaded input data, shape = {}'.format(input_data.shape))
 
         # create splits
         kfold = KFold(n_splits=self.n_splits, shuffle=True, random_state=self.seed)
-        print(f'Splits: {self.n_splits}')
+        print('Splits: {}'.format(self.n_splits))
 
         # assume y is in the last column by default
         for idx_train, idx_test in kfold.split(input_data):
@@ -210,10 +210,10 @@ class Env:
 
     def __run_split(self, store_data):
         """ Creates the sampler for the current split and draws the samples. """
-        logging.info(f'Split: {self.current_split + 1} / {self.n_splits}')
+        logging.info('Split: {} / {}'.format(self.current_split + 1, self.n_splits))
 
         utils.set_data_dir(self.data_dir + '/split-' + str(self.current_split))
-        logging.info(f'Data directory: {utils.DATA_DIR}')
+        logging.info('Data directory: {}'.format(utils.DATA_DIR))
 
         self.sampler = self.sampler_factory()
 
@@ -228,10 +228,11 @@ class Env:
         samples_drawn = 0
 
         with tf.Session() as session:
-            tf.initialize_all_variables().run()
+            tf.global_variables_initializer().run()
 
             collected_samples = list()
             collected_stats = list()
+            collected_params = list()
 
             # sample in chunks
             elapsed_ema = None
@@ -243,14 +244,17 @@ class Env:
 
                 # draw samples into current chunk
                 for sample in range(self.n_samples):
+                    # import pdb; pdb.set_trace()
                     if self.thinning > 0:
                         _ = [self.sampler.sample_predictive(session=session, is_discarded=True) for _ in
                              range(self.thinning)]
 
-                    sample, stats = self.sampler.sample_predictive(return_stats=True, session=session)
+                    sample, stats, params = self.sampler.sample_predictive(return_stats=True, session=session)
 
                     collected_samples.extend(sample)
                     collected_stats.extend(stats)
+                    if params:
+                        collected_params.extend(params)
 
                 samples_drawn += self.chains_num * self.n_samples
 
@@ -279,18 +283,18 @@ class Env:
 
                 samples = collected_samples[-lag:]
                 test_rmse = self.compute_rmse(np.asarray(samples))
-
-                logging.info(f'Chunk = {chunk + 1}/{self.n_chunks}, elapsed = {elapsed:.1f}s, ' +
-                             f'remain = {remaining[0]:02.0f}:{remaining[1]:02.0f}, test RMSE: {test_rmse:.2f}, ' +
-                             f'rate = {min_rate:.2f}-{max_rate:.2f}, loss = {min_loss:.2f}-{max_loss:.2f}, ' +
-                             f'norm = {min_norm:.2f}-{max_norm:.2f}, step = {min_step:.12f}-{max_step:.12f}, ' +
-                             f'noise var = {min_noise:.2f}-{max_noise:.2f}')
+                logging.info('Chunk = {}/{}, elapsed = {:.1f}s, '.format(chunk + 1, self.n_chunks, elapsed) +
+                             'remain = {:02.0f}:{:02.0f}, test RMSE: {:.10f}, '.format(remaining[0], remaining[1], test_rmse) +
+                             'rate = {:.2f}-{:.2f}, loss = {:.2f}-{:.2f}, '.format(min_rate, max_rate, min_loss, max_loss) +
+                             'norm = {:.2f}-{:.2f}, step = {:.2f}-{:.2f}, '.format(min_norm, max_norm, min_step, max_step) +
+                             'noise var = {:.2f}-{:.2f}'.format(min_noise, max_noise))
 
                 # store collected data
                 if store_data and (((chunk + 1) % 10 == 0) or ((chunk + 1) == self.n_chunks)):
                     start = pc()
                     utils.serialize('samples', np.asarray(collected_samples))
                     utils.serialize('stats', collected_stats)
+                    utils.serialize('params', np.asarray(collected_params))
 
                     logging.info('---> Collections serialized in {:.0f} seconds.'.format(pc() - start))
 

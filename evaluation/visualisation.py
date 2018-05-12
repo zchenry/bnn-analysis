@@ -105,7 +105,7 @@ def plot_predictive_comparison(env, baseline_samples, target_samples, stddev_mul
     if target_metrics is not None:
         offset = 0
         for tm, tv in target_metrics.items():
-            ax.annotate(f'{tm}: {tv:.02f}', xy=(0.08, 0.92 - offset), xytext=(0.08, 0.92 - offset),
+            ax.annotate('{}: {:.02f}'.format(tm, tv), xy=(0.08, 0.92 - offset), xytext=(0.08, 0.92 - offset),
                         xycoords='figure fraction', textcoords='figure fraction')
             offset += 0.04
 
@@ -122,7 +122,7 @@ def plot_metrics(baseline_samples, samples_dict, times_dict, metric_names, resam
     plot_dict = dict()
 
     for name, samples in samples_dict.items():
-        logging.info(f'Testing: {name}')
+        logging.info('Testing: {}'.format(name))
         times = times_dict[name]
 
         if max_time is not None:
@@ -133,7 +133,7 @@ def plot_metrics(baseline_samples, samples_dict, times_dict, metric_names, resam
                 samples = samples[:ind_max]
 
         if samples.shape[0] == 0:
-            logging.info(f'No samples for {name}.')
+            logging.info('No samples for {}.'.format(name))
             continue
 
         run_metrics = None
@@ -205,7 +205,7 @@ def plot_hist(baseline_samples, target_samples, true_x, true_y):
     y0, y1 = ax.get_ylim()
 
     plt.plot([true_y, true_y], [0, y1 - (y1 - y0) * 0.01], linewidth=1, color='r')
-    plt.title('Predictive' + (f' at {true_x:.2f}' if true_x is not None else ''))
+    plt.title('Predictive' + (' at {:.2f}'.format(true_x) if true_x is not None else ''))
 
     fig = plt.gcf()
     fig.set_size_inches(9, 9)

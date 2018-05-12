@@ -1,5 +1,5 @@
 """
-Boston Housing
+Pro
 """
 import sys
 sys.path.insert(0, '~/bnn-analysis/')
@@ -10,13 +10,13 @@ warnings.filterwarnings('ignore')
 
 from collections import OrderedDict
 
-from bh_env import BostonHousingEnv
+from pro_env import ProEnv
 from experiment import Experiment
 from hmc_samplers import HMCSampler, SGHMCSampler
 from ld_samplers import LDSampler, SGLDSampler, pSGLDSampler
 
 
-class BostonHousingExp(Experiment):
+class ProExp(Experiment):
     def __init__(self):
         super().__init__()
 
@@ -25,7 +25,7 @@ class BostonHousingExp(Experiment):
         sampler_params['weights_precision'] = 1.
 
     def run_baseline_hmc(self):
-        env = BostonHousingEnv()
+        env = ProEnv()
         self.setup_env_defaults(env)
 
         env.model_name = 'hmc'
@@ -48,7 +48,7 @@ class BostonHousingExp(Experiment):
         env.run()
 
     def run_sgld(self):
-        env = BostonHousingEnv()
+        env = ProEnv()
         self.setup_env_defaults(env)
 
         env.model_name = 'sgld'
@@ -66,7 +66,7 @@ class BostonHousingExp(Experiment):
         env.run()
 
     def run_sghmc(self):
-        env = BostonHousingEnv()
+        env = ProEnv()
         self.setup_env_defaults(env)
 
         env.model_name = 'sghmc'
@@ -87,7 +87,7 @@ class BostonHousingExp(Experiment):
         env.run()
 
     def run_psgld(self):
-        env = BostonHousingEnv()
+        env = ProEnv()
         self.setup_env_defaults(env)
 
         env.model_name = 'psgld'
@@ -107,7 +107,7 @@ class BostonHousingExp(Experiment):
         env.run()
 
     def run_dropout(self):
-        env = BostonHousingEnv()
+        env = ProEnv()
         self.setup_env_defaults(env)
 
         env.model_name = 'dropout'
@@ -125,7 +125,7 @@ class BostonHousingExp(Experiment):
         env.run()
 
     def run_bbb(self):
-        env = BostonHousingEnv()
+        env = ProEnv()
         self.setup_env_defaults(env)
 
         env.model_name = 'bbb'
@@ -136,7 +136,7 @@ class BostonHousingExp(Experiment):
         env.run()
 
     def run_pbp(self):
-        env = BostonHousingEnv()
+        env = ProEnv()
         self.setup_env_defaults(env)
 
         env.model_name = 'pbp'
@@ -149,29 +149,16 @@ class BostonHousingExp(Experiment):
 
 
 def main():
-    experiment = BostonHousingExp()
+    experiment = ProExp()
 
     queue = OrderedDict()
     queue['HMC'] = experiment.run_baseline_hmc
-    # queue['SGLD'] = experiment.run_sgld
     queue['SGHMC'] = experiment.run_sghmc
-    # queue['pSGLD'] = experiment.run_psgld
-    # queue["BBB"] = experiment.run_bbb
-    # queue["PBP"] = experiment.run_pbp
-    # queue['Dropout'] = experiment.run_dropout
 
     experiment.run_queue(queue, skip_completed=False, cpu=False)
     experiment.report_metrics_table(queue)
 
     del queue['HMC']
-
-    # max_time = 15
-    # experiment.plot_multiple_metrics('HMC', queue.keys(), ['KS'], max_time=max_time, title_name='KS distance')
-    # experiment.plot_multiple_metrics('HMC', queue.keys(), ['Precision'], max_time=max_time, title_name='Precision')
-    # experiment.plot_multiple_metrics('HMC', queue.keys(), ['Recall'], max_time=max_time, title_name='Recall')
-    # experiment.plot_multiple_metrics("HMC", queue.keys(), ["KL"])
-    # experiment.plot_multiple_metrics("HMC", queue.keys(), ["F1"], max_time=max_time, title_name="F1 score")
-    # experiment.plot_multiple_metrics("HMC", queue.keys(), ["IoU"], max_time=max_time)
 
 
 if __name__ == '__main__':
